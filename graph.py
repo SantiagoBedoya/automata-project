@@ -137,6 +137,7 @@ def union(g1: Graph, g2: Graph):
     # Generate edges
     ready = []
     for node in result.get_nodes():
+        ready.append(node)
         [n1, n2] = node.split(':')
         node_1 = g1.get_node(n1)
         node_2 = g2.get_node(n2)
@@ -178,7 +179,6 @@ def union(g1: Graph, g2: Graph):
                         way2 = node_2.get_weight(node_p2)
                         if way1 is not None and way2 is not None and way1 in way2:
                             result.add_edge(node, different_node, node_1.get_weight(node_p1))
-        ready.append(node)
 
     return result
 
