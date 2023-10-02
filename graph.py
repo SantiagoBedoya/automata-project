@@ -29,6 +29,8 @@ class Node:
         return self.id
 
     def get_weight(self, neighbor):
+        if neighbor not in self.adjacent.keys():
+            return None
         return self.adjacent[neighbor]
 
 class Graph:
@@ -58,7 +60,7 @@ class Graph:
             self.add_node(to)
 
         self.node_dict[frm].add_neighbor(self.node_dict[to], cost)
-        self.node_dict[to].add_neighbor(self.node_dict[frm], cost)
+        # self.node_dict[to].add_neighbor(self.node_dict[frm], cost)
 
     def get_nodes(self):
         return self.node_dict.keys()
@@ -85,3 +87,141 @@ class Graph:
                 result.add_node(key, is_initial, is_acceptable)
 
         return result
+    
+def print_graph(g: Graph):
+    for node in g.get_nodes():
+        n = g.get_node(node)
+        print(n)
+        for conn in n.get_connections():
+            print(f'\t{n.get_weight(conn)} => {conn}')
+
+def complemento(g1: Graph):
+    result = Graph()
+
+    for node in g1.get_nodes():
+        n = g1.get_node(node)
+        result.add_node(n.id, not n.is_initial, not n.is_acceptable)
+
+    for node in g1.get_nodes():
+        n = g1.get_node(node)
+        for conn in n.get_connections():
+            result.add_edge(n.id, conn.id, n.get_weight(conn))
+
+    return result
+
+
+def union(g1: Graph, g2: Graph):
+    g1_nodes = g1.get_nodes()
+    g2_nodes = g2.get_nodes()
+
+    result = Graph()
+
+    # Generate nodes
+    for g1_node in g1_nodes:
+        n1 = g1.get_node(g1_node)
+
+        for g2_node in g2_nodes:
+            n2 = g2.get_node(g2_node)
+            is_initial = False
+            is_acceptable = False
+
+            if n1.is_initial and n2.is_initial:
+                is_initial = True
+
+            if n1.is_acceptable or n2.is_acceptable:
+                is_acceptable = True
+            
+            key = f'{g1_node}:{g2_node}'
+            result.add_node(key, is_initial, is_acceptable)
+
+    # Generate edges
+    ready = []
+    for node in result.get_nodes():
+        ready.append(node)
+        [n1, n2] = node.split(':')
+        node_1 = g1.get_node(n1)
+        node_2 = g2.get_node(n2)
+
+        # revisamos las conexiones del nodo_1
+        for conn in node_1.get_connections():
+            # si la conexion es hacia ella misma
+            if node_1.id == conn.id:
+                # buscamos otro nodo que contenga a node_1
+                r = find_different_node(result, node_1.id, node)
+                # si la encuentra
+                if r is not None and r not in ready:
+                    # obtenemos los nodos de r
+                    [p1, p2] = r.split(':')
+                    node_p1 = g1.get_node(p1)
+                    node_p2 = g2.get_node(p2)
+
+                    # si node_2 se connecta al node_p2
+                    way = node_2.get_weight(node_p2)
+                    if way is not None:
+                        result.add_edge(node, r, way)
+                else:
+                    result.add_edge(node, node, node_1.get_weight(conn))
+
+            # si la conexion es hacia otro nodo
+            else:
+                # buscamos otro nodo que contega el nodo al que se conecta
+                r = find_different_node(result, conn.id, node)
+                # si encuentra otro nodo
+                if r is not None:
+                    [p1, p2] = r.split(':')
+                    node_p1 = g1.get_node(p1)
+                    node_p2 = g2.get_node(p2)
+
+                    # si existe conexion entre el node_1 y node_p1
+                    way1 = node_1.get_weight(node_p1)
+                    way2 = node_2.get_weight(node_p2)
+                    if way1 is not None and way2 is not None and way1 in way2:
+                        result.add_edge(node, r, node_1.get_weight(node_p1))
+                    else:
+                        new_r = find_different_node(result, conn.id, r)
+                        if new_r is not None:
+                            [j1, j2] = new_r.split(':')
+                            node_j1 = g1.get_node(j1)
+                            node_j2 = g2.get_node(j2) 
+
+                            way1 = node_1.get_weight(node_j1)
+                            way2 = node_2.get_weight(node_j2)
+                            if way1 is not None and way2 is not None and way1 in way2:
+                                result.add_edge(node, new_r, way1)
+
+    return result
+
+
+def find_different_node(g: Graph, key: str, current_node: str):
+    for node in g.get_nodes():
+        if key in node and current_node != node:
+            return node
+        
+    return None
+    
+
+if __name__ == '__main__':
+    g1 = Graph()
+    g1.add_node('a', True, False)
+    g1.add_node('b', False, True)
+
+    g1.add_edge('a', 'a', 'Y')
+    g1.add_edge('a', 'b', 'X')
+    g1.add_edge('b', 'b', 'X:Y')
+
+    print('\n-----AUTOMATA 1-----')
+    print_graph(g1)
+
+    g2 = Graph()
+    g2.add_node('c', True, False)
+    g2.add_node('d', False, True)
+
+    g2.add_edge('c', 'c', 'X')
+    g2.add_edge('c', 'd', 'Y')
+    g2.add_edge('d', 'd', 'X:Y')
+
+    print('\n-----AUTOMATA 2-----')
+    print_graph(g2)
+
+    print("\n----UNION----")
+    print_graph(union(g1, g2))
