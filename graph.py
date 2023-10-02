@@ -157,9 +157,14 @@ def union(g1: Graph, g2: Graph):
                         node_p2 = g2.get_node(p2)
 
                         # si node_2 se connecta al node_p2
-                        way = node_2.get_weight(node_p2)
-                        if way is not None:
-                            result.add_edge(node, different_node, way)
+                        way1 = node_1.get_weight(node_p1)
+                        way2 = node_2.get_weight(node_p2)
+                        if way1 is not None and way2 is not None:
+                            if way2 in way1:
+                                result.add_edge(node, different_node, way2)
+                                way = way1.split(':')[0]
+                                result.add_edge(node, node, way)
+                        
                     else:
                         result.add_edge(node, node, node_1.get_weight(conn))
 
