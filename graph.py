@@ -222,3 +222,6 @@ if __name__ == '__main__':
 
     print("\n----UNION----")
     print_graph(union(g1, g2))
+
+    print("\n----COMPLEMENTO----")
+    print_graph(complemento(g1))
