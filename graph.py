@@ -160,10 +160,21 @@ def union(g1: Graph, g2: Graph):
                         way1 = node_1.get_weight(node_p1)
                         way2 = node_2.get_weight(node_p2)
                         if way1 is not None and way2 is not None:
-                            if way2 in way1:
+                            if way2 == way1:
                                 result.add_edge(node, different_node, way2)
-                                way = way1.split(':')[0]
-                                result.add_edge(node, node, way)
+                            else:
+                                done_conn = []
+                                if way2 in way1:
+                                    result.add_edge(node, different_node, way2)
+                                    done_conn.append(way2)
+                                if way1 in way2:
+                                    result.add_edge(node, different_node, way1)
+                                    done_conn.append(way1)
+
+                                longest = longest_word(way1, way2)
+                                for way in longest.split(':'):
+                                    if way not in done_conn:
+                                        result.add_edge(node, node, way)
                         
                     else:
                         result.add_edge(node, node, node_1.get_weight(conn))
@@ -187,6 +198,10 @@ def union(g1: Graph, g2: Graph):
 
     return result
 
+def longest_word(w1: str, w2: str):
+    if len(w1) > len(w2):
+        return w1
+    return w2
 
 def find_different_nodes(g: Graph, key: str, current_node: str):
     results = []
