@@ -137,7 +137,6 @@ def union(g1: Graph, g2: Graph):
     # Generate edges
     ready = []
     for node in result.get_nodes():
-        ready.append(node)
         [n1, n2] = node.split(':')
         node_1 = g1.get_node(n1)
         node_2 = g2.get_node(n2)
@@ -147,57 +146,50 @@ def union(g1: Graph, g2: Graph):
             # si la conexion es hacia ella misma
             if node_1.id == conn.id:
                 # buscamos otro nodo que contenga a node_1
-                r = find_different_node(result, node_1.id, node)
+                different_nodes = find_different_nodes(result, node_1.id, node)
                 # si la encuentra
-                if r is not None and r not in ready:
-                    # obtenemos los nodos de r
-                    [p1, p2] = r.split(':')
-                    node_p1 = g1.get_node(p1)
-                    node_p2 = g2.get_node(p2)
+                for different_node in different_nodes:
+                    if different_node is not None and different_node not in ready:
+                        # obtenemos los nodos de r
+                        [p1, p2] = different_node.split(':')
+                        node_p1 = g1.get_node(p1)
+                        node_p2 = g2.get_node(p2)
 
-                    # si node_2 se connecta al node_p2
-                    way = node_2.get_weight(node_p2)
-                    if way is not None:
-                        result.add_edge(node, r, way)
-                else:
-                    result.add_edge(node, node, node_1.get_weight(conn))
+                        # si node_2 se connecta al node_p2
+                        way = node_2.get_weight(node_p2)
+                        if way is not None:
+                            result.add_edge(node, different_node, way)
+                    else:
+                        result.add_edge(node, node, node_1.get_weight(conn))
 
             # si la conexion es hacia otro nodo
             else:
                 # buscamos otro nodo que contega el nodo al que se conecta
-                r = find_different_node(result, conn.id, node)
+                different_nodes = find_different_nodes(result, conn.id, node)
                 # si encuentra otro nodo
-                if r is not None:
-                    [p1, p2] = r.split(':')
-                    node_p1 = g1.get_node(p1)
-                    node_p2 = g2.get_node(p2)
+                for different_node in different_nodes:
+                    if different_node is not None:
+                        [p1, p2] = different_node.split(':')
+                        node_p1 = g1.get_node(p1)
+                        node_p2 = g2.get_node(p2)
 
-                    # si existe conexion entre el node_1 y node_p1
-                    way1 = node_1.get_weight(node_p1)
-                    way2 = node_2.get_weight(node_p2)
-                    if way1 is not None and way2 is not None and way1 in way2:
-                        result.add_edge(node, r, node_1.get_weight(node_p1))
-                    else:
-                        new_r = find_different_node(result, conn.id, r)
-                        if new_r is not None:
-                            [j1, j2] = new_r.split(':')
-                            node_j1 = g1.get_node(j1)
-                            node_j2 = g2.get_node(j2) 
-
-                            way1 = node_1.get_weight(node_j1)
-                            way2 = node_2.get_weight(node_j2)
-                            if way1 is not None and way2 is not None and way1 in way2:
-                                result.add_edge(node, new_r, way1)
+                        # si existe conexion entre el node_1 y node_p1
+                        way1 = node_1.get_weight(node_p1)
+                        way2 = node_2.get_weight(node_p2)
+                        if way1 is not None and way2 is not None and way1 in way2:
+                            result.add_edge(node, different_node, node_1.get_weight(node_p1))
+        ready.append(node)
 
     return result
 
 
-def find_different_node(g: Graph, key: str, current_node: str):
+def find_different_nodes(g: Graph, key: str, current_node: str):
+    results = []
     for node in g.get_nodes():
         if key in node and current_node != node:
-            return node
+            results.append(node)
         
-    return None
+    return results
     
 
 if __name__ == '__main__':
