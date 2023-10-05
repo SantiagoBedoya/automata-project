@@ -198,6 +198,49 @@ def union(g1: Graph, g2: Graph):
 
     return result
 
+def interseccion(g1: Graph, g2: Graph):
+    result = Graph()
+
+    for node1 in g1.get_nodes():
+        for node2 in g2.get_nodes():
+            n1 = g1.get_node(node1)
+            n2 = g2.get_node(node2)
+            is_initial = n1.is_initial and n2.is_initial
+            is_acceptable = n1.is_acceptable and n2.is_acceptable
+            key = f'{node1}:{node2}'
+            result.add_node(key, is_initial, is_acceptable)
+
+    for node1 in g1.get_nodes():
+        for node2 in g2.get_nodes():
+            n1 = g1.get_node(node1)
+            n2 = g2.get_node(node2)
+            current_node = f'{node1}:{node2}'
+            for conn1 in n1.get_connections():
+                for conn2 in n2.get_connections():
+                    weight1 = n1.get_weight(conn1)
+                    weight2 = n2.get_weight(conn2)
+                    if weight1 is not None and weight2 is not None:
+                        new_node1 = f'{conn1.id}:{conn2.id}'
+                        if weight1 == weight2:
+                            result.add_edge(current_node, new_node1, weight1)
+    return result
+
+def inverso(g1: Graph):
+    result = Graph()
+
+    # Invertir estados iniciales y aceptables
+    for node in g1.get_nodes():
+        n = g1.get_node(node)
+        result.add_node(node, not n.is_initial, not n.is_acceptable)
+
+    # Invertir las transiciones
+    for node in g1.get_nodes():
+        n = g1.get_node(node)
+        for conn in n.get_connections():
+            result.add_edge(conn.id, node, n.get_weight(conn))
+
+    return result
+
 def longest_word(w1: str, w2: str):
     if len(w1) > len(w2):
         return w1
@@ -240,3 +283,9 @@ if __name__ == '__main__':
 
     print("\n----COMPLEMENTO----")
     print_graph(complemento(g1))
+
+    print("\n----INTERSECCION----")
+    print_graph(interseccion(g1, g2))
+
+    print("\n----INVERSO----")
+    print_graph(inverso(g1))
