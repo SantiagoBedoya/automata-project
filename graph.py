@@ -1,3 +1,5 @@
+import random
+
 class Node:
     def __init__(self, node: str, is_initial: bool, is_acceptable: bool):
         self.id: str = node
@@ -87,6 +89,25 @@ class Graph:
                 result.add_node(key, is_initial, is_acceptable)
 
         return result
+
+    
+    def to_networkx(self, networkx):
+        node_colors = {}
+        for node in self.get_nodes():
+            n = self.get_node(node)
+
+            if n.is_initial:
+                node_colors[n.id] = 'green'
+            elif n.is_acceptable:
+                node_colors[n.id] = 'red'
+            else:
+                node_colors[n.id] = 'blue'
+
+            networkx.add_node(n.id, pos=(random.randint(0, 10), random.randint(0, 10)))
+            # networkx.add_nodes_from([n.id])
+            for conn in n.get_connections():
+                networkx.add_edges_from([(n.id, conn.id, {"label": n.get_weight(conn)})])
+        return node_colors
     
 def print_graph(g: Graph):
     for node in g.get_nodes():
