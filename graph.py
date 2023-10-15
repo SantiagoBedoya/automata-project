@@ -310,7 +310,7 @@ def interseccion(g1: Graph, g2: Graph):
     return result
 
 
-def inverso(g1: Graph):
+def reverso(g1: Graph):
     result = Graph()
 
     # Invertir estados iniciales y aceptables
@@ -369,8 +369,8 @@ if __name__ == '__main__':
     print("\n----COMPLEMENTO----")
     print_graph(complemento(g1))
 
-
     print("\n----INTERSECCION----")
     print_graph(interseccion(g1, g2))
-    print("\n----INVERSO----")
-    print_graph(inverso(g1))
+
+    print("\n----REVERSO----")
+    print_graph(reverso(g1))

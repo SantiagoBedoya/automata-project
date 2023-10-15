@@ -3,7 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import ttk
-from graph import Graph, union, interseccion, complemento, inverso
+from graph import Graph, union, interseccion, complemento, reverso
 
 
 class App(tk.Tk):
@@ -59,9 +59,9 @@ class App(tk.Tk):
         nc = complemento_graph.to_networkx(self.graph)
         self.draw_graph(nc)
 
-    def show_inverso(self):
+    def show_reverso(self):
         self.graph.clear()
-        inverso_graph = inverso(self.g1)
+        inverso_graph = reverso(self.g1)
         nc = inverso_graph.to_networkx(self.graph)
         self.draw_graph(nc)
 
@@ -90,7 +90,7 @@ class App(tk.Tk):
         )
         self.button4.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.button5 = tk.Button(self.frame1, text="Inverso", command=self.show_inverso)
+        self.button5 = tk.Button(self.frame1, text="Reverso", command=self.show_reverso)
         self.button5.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         self.graph = nx.Graph()
