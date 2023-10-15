@@ -219,8 +219,6 @@ def union(g1: Graph, g2: Graph):
 
     return result
 
-#crea la interseccion entre dos automatas,recibe dos automatas,el estado de aceptacion debe ser rojo,el estado inicial debe ser verde, y los estados intermedios azules
-
 def interseccion(g1: Graph, g2: Graph):
     g1_nodes = g1.get_nodes()
     g2_nodes = g2.get_nodes()
