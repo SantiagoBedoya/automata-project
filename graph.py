@@ -219,32 +219,96 @@ def union(g1: Graph, g2: Graph):
 
     return result
 
+#crea la interseccion entre dos automatas,recibe dos automatas,el estado de aceptacion debe ser rojo,el estado inicial debe ser verde, y los estados intermedios azules
+
 def interseccion(g1: Graph, g2: Graph):
+    g1_nodes = g1.get_nodes()
+    g2_nodes = g2.get_nodes()
+
     result = Graph()
 
-    for node1 in g1.get_nodes():
-        for node2 in g2.get_nodes():
-            n1 = g1.get_node(node1)
-            n2 = g2.get_node(node2)
-            is_initial = n1.is_initial and n2.is_initial
-            is_acceptable = n1.is_acceptable and n2.is_acceptable
-            key = f'{node1}:{node2}'
+    # Generate nodes
+    for g1_node in g1_nodes:
+        n1 = g1.get_node(g1_node)
+
+        for g2_node in g2_nodes:
+            n2 = g2.get_node(g2_node)
+            is_initial = False
+            is_acceptable = False
+
+            if n1.is_initial and n2.is_initial:
+                is_initial = True
+
+            if n1.is_acceptable and n2.is_acceptable:
+                is_acceptable = True
+            
+            key = f'{g1_node}:{g2_node}'
             result.add_node(key, is_initial, is_acceptable)
 
-    for node1 in g1.get_nodes():
-        for node2 in g2.get_nodes():
-            n1 = g1.get_node(node1)
-            n2 = g2.get_node(node2)
-            current_node = f'{node1}:{node2}'
-            for conn1 in n1.get_connections():
-                for conn2 in n2.get_connections():
-                    weight1 = n1.get_weight(conn1)
-                    weight2 = n2.get_weight(conn2)
-                    if weight1 is not None and weight2 is not None:
-                        new_node1 = f'{conn1.id}:{conn2.id}'
-                        if weight1 == weight2:
-                            result.add_edge(current_node, new_node1, weight1)
+    # Generate edges
+    ready = []
+    for node in result.get_nodes():
+        ready.append(node)
+        [n1, n2] = node.split(':')
+        node_1 = g1.get_node(n1)
+        node_2 = g2.get_node(n2)
+
+        # revisamos las conexiones del nodo_1
+        for conn in node_1.get_connections():
+            # si la conexion es hacia ella misma
+            if node_1.id == conn.id:
+                # buscamos otro nodo que contenga a node_1
+                different_nodes = find_different_nodes(result, node_1.id, node)
+                # si la encuentra
+                for different_node in different_nodes:
+                    if different_node is not None and different_node not in ready:
+                        # obtenemos los nodos de r
+                        [p1, p2] = different_node.split(':')
+                        node_p1 = g1.get_node(p1)
+                        node_p2 = g2.get_node(p2)
+
+                        # si node_2 se connecta al node_p2
+                        way1 = node_1.get_weight(node_p1)
+                        way2 = node_2.get_weight(node_p2)
+                        if way1 is not None and way2 is not None:
+                            if way2 == way1:
+                                result.add_edge(node, different_node, way2)
+                            else:
+                                done_conn = []
+                                if way2 in way1:
+                                    result.add_edge(node, different_node, way2)
+                                    done_conn.append(way2)
+                                if way1 in way2:
+                                    result.add_edge(node, different_node, way1)
+                                    done_conn.append(way1)
+
+                                longest = longest_word(way1, way2)
+                                for way in longest.split(':'):
+                                    if way not in done_conn:
+                                        result.add_edge(node, node, way)
+
+                    else:
+                        result.add_edge(node, node, node_1.get_weight(conn))
+
+            # si la conexion es hacia otro nodo
+            else:
+                # buscamos otro nodo que contega el nodo al que se conecta
+                different_nodes = find_different_nodes(result, conn.id, node)
+                # si encuentra otro nodo
+                for different_node in different_nodes:
+                    if different_node is not None:
+                        [p1, p2] = different_node.split(':')
+                        node_p1 = g1.get_node(p1)
+                        node_p2 = g2.get_node(p2)
+
+                        # si existe conexion entre el node_1 y node_p1
+                        way1 = node_1.get_weight(node_p1)
+                        way2 = node_2.get_weight(node_p2)
+                        if way1 is not None and way2 is not None and way1 in way2:
+                            result.add_edge(node, different_node, node_1.get_weight(node_p1))
+
     return result
+
 
 def inverso(g1: Graph):
     result = Graph()
@@ -305,8 +369,8 @@ if __name__ == '__main__':
     print("\n----COMPLEMENTO----")
     print_graph(complemento(g1))
 
+
     print("\n----INTERSECCION----")
     print_graph(interseccion(g1, g2))
-
     print("\n----INVERSO----")
     print_graph(inverso(g1))
