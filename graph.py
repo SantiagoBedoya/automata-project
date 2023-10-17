@@ -66,29 +66,6 @@ class Graph:
 
     def get_nodes(self):
         return self.node_dict.keys()
-    
-    def union(self, graph: 'Graph'):
-        result = Graph()
-
-        # Generate nodes
-        for g1_node in self.get_nodes:
-            n1 = self.get_node(g1_node)
-
-            for g2_node in graph:
-                n2 = graph.get_node(g2_node)
-                is_initial = False
-                is_acceptable = False
-
-                if n1.is_initial and n2.is_initial:
-                    is_initial = True
-
-                if n1.is_acceptable or n2.is_acceptable:
-                    is_acceptable = True
-                
-                key = f'{g1_node}:{g2_node}'
-                result.add_node(key, is_initial, is_acceptable)
-
-        return result
 
     
     def to_networkx(self, networkx):
